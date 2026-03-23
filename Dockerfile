@@ -14,7 +14,6 @@ RUN apt-get update && apt-get install -y \
 # Copy project files
 COPY agent/requirements.txt .
 COPY agent/ ./agent/
-COPY .env.example .env.example
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
