@@ -6,6 +6,15 @@ Runs every LOOP_INTERVAL_MINUTES minutes.
 Checks yield -> reasons -> acts -> reports.
 """
 
+# Fix pkg_resources on Python 3.12+ BEFORE any other imports
+import subprocess, sys
+try:
+    import pkg_resources
+except ImportError:
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "setuptools"])
+    import importlib
+    import pkg_resources
+
 import os
 import schedule
 import time
@@ -14,7 +23,6 @@ import requests
 from dotenv import load_dotenv
 
 load_dotenv()
-
 from tools import (
     check_vault_state,
     withdraw_yield_for_compute,
