@@ -11,7 +11,8 @@ import schedule
 import time
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
-from langgraph.prebuilt import create_react_agent
+from langchain.agents import create_react_agent, AgentExecutor
+from langchain.prompts import PromptTemplate
 from langchain_core.messages import HumanMessage
 
 load_dotenv()
@@ -47,6 +48,7 @@ tools = [
 
 # ── Create ReAct agent ──────────────────────────────────────
 agent = create_react_agent(llm, tools)
+agent_executor = AgentExecutor.from_agent_and_tools(agent=agent, tools=tools, verbose=True)
 
 # ── System prompt ───────────────────────────────────────────
 SYSTEM_PROMPT = """You are YieldMind - an autonomous AI agent that funds its own existence through stETH staking yield.
@@ -71,9 +73,7 @@ def run_agent_cycle():
     print(f"{'='*50}")
 
     try:
-        result = agent.invoke({
-            "messages": [
-                HumanMessage(content=f"""{SYSTEM_PROMPT}
+        prompt = f"""{SYSTEM_PROMPT}
 
 Execute your current cycle:
 1. Check vault state
@@ -82,17 +82,15 @@ Execute your current cycle:
 4. Withdraw a tiny amount of yield to fund this inference session (max 0.0005 ETH) if yield > 0.001
 5. Send a brief Telegram report summarizing everything
 6. If nothing interesting happened, just report the current yield balance and exit gracefully
-""")
-            ]
-        })
+"""
 
-        # Print final response
-        for msg in result["messages"]:
-            if hasattr(msg, "content") and msg.content:
-                print(f"\n[Agent]: {msg.content}")
+        result = agent_executor.invoke({"input": prompt})
+        print(f"\n[Agent Output]: {result.get('output', 'No output')}")
 
     except Exception as e:
         print(f"[ERROR] Agent cycle failed: {e}")
+        import traceback
+        traceback.print_exc()
         # Try to send error alert
         try:
             import requests
