@@ -11,8 +11,7 @@ import subprocess, sys
 try:
     import pkg_resources
 except ImportError:
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "setuptools"])
-    import importlib
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "setuptools<70"])
     import pkg_resources
 
 import os
