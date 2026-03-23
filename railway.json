@@ -1,9 +1,8 @@
 {
   "build": {
-    "builder": "nixpacks"
+    "builder": "dockerfile"
   },
   "deploy": {
-    "startCommand": "cd agent && pip install -r requirements.txt && python agent.py",
     "restartPolicyType": "always",
     "restartPolicyMaxRetries": 10
   }
