@@ -15,6 +15,9 @@ RUN apt-get update && apt-get install -y \
 COPY agent/requirements.txt .
 COPY agent/ ./agent/
 
+# Upgrade pip and install setuptools explicitly first
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel
+
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
