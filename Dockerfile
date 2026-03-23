@@ -1,11 +1,12 @@
 # YieldMind Agent Dockerfile
-FROM python:3.12-slim
+FROM python:3.12
 
 # Set working directory
 WORKDIR /app
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
+    build-essential \
     curl \
     git \
     && rm -rf /var/lib/apt/lists/*
