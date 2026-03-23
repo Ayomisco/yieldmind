@@ -3,6 +3,7 @@
     "builder": "dockerfile"
   },
   "deploy": {
+    "startCommand": "pip install setuptools && cd /app/agent && python agent.py",
     "restartPolicyType": "always",
     "restartPolicyMaxRetries": 10
   }

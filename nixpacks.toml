@@ -1,0 +1,8 @@
+[phases.setup]
+nixPkgs = ["python311", "gcc"]
+
+[phases.install]
+cmds = ["pip install setuptools wheel", "pip install -r agent/requirements.txt"]
+
+[start]
+cmd = "cd agent && python agent.py"
