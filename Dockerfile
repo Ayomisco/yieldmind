@@ -1,5 +1,5 @@
 # YieldMind Agent Dockerfile
-FROM python:3.12
+FROM python:3.12-slim
 
 # Set working directory
 WORKDIR /app
@@ -11,14 +11,15 @@ RUN apt-get update && apt-get install -y \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy project files
+# Copy project files first
 COPY agent/requirements.txt .
 COPY agent/ ./agent/
 
-# Upgrade pip and install setuptools explicitly first
-RUN pip install --no-cache-dir --upgrade pip setuptools wheel
+# Explicitly install setuptools and wheel FIRST
+RUN pip install --no-cache-dir --upgrade pip
+RUN pip install --no-cache-dir "setuptools>=65.0" "wheel"
 
-# Install Python dependencies
+# Install all requirements
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Set environment variables
