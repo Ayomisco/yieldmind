@@ -1,9 +1,8 @@
 # agent/tools.py
-"""All LangChain tools the YieldMind agent can call."""
+"""All tools the YieldMind agent can call."""
 
 import json
 import requests
-from langchain.tools import tool
 from web3 import Web3
 
 import vault as vault_module
@@ -13,7 +12,6 @@ from config import (
 )
 
 
-@tool
 def check_vault_state() -> str:
     """
     Check the current state of the YieldVault contract.
@@ -33,7 +31,6 @@ def check_vault_state() -> str:
         return json.dumps({"error": str(e), "can_act": False})
 
 
-@tool
 def withdraw_yield_for_compute(amount_eth: float) -> str:
     """
     Withdraw a small amount of accrued yield to pay for this agent's compute costs.
@@ -59,7 +56,6 @@ def withdraw_yield_for_compute(amount_eth: float) -> str:
         return json.dumps({"error": str(e), "success": False})
 
 
-@tool
 def get_uniswap_quote(token_in: str, token_out: str, amount_eth: float, chain_id: int = 84532) -> str:
     """
     Get a swap quote from Uniswap API.
@@ -85,13 +81,11 @@ def get_uniswap_quote(token_in: str, token_out: str, amount_eth: float, chain_id
             "amount_in_eth": amount_eth,
             "amount_out": data.get("quote", {}).get("amount", "unknown"),
             "price_impact": data.get("quote", {}).get("priceImpact", "unknown"),
-            "raw": data
         })
     except Exception as e:
         return json.dumps({"error": str(e), "quote_received": False})
 
 
-@tool
 def execute_uniswap_swap(token_in: str, token_out: str, amount_eth: float, max_slippage_percent: float = 0.5) -> str:
     """
     Execute a real token swap via Uniswap API on Base.
@@ -127,22 +121,17 @@ def execute_uniswap_swap(token_in: str, token_out: str, amount_eth: float, max_s
                 "message": f"Swap executed. TxHash: {data['txHash']}"
             })
         else:
-            return json.dumps({"success": False, "error": "No txHash in response", "raw": data})
+            return json.dumps({"success": False, "error": "No txHash in response"})
     except Exception as e:
         return json.dumps({"error": str(e), "success": False})
 
 
-@tool
 def analyze_market_conditions() -> str:
     """
     Fetch basic market data to inform trading decisions.
     Returns ETH price, stETH APY estimate, and market conditions summary.
     """
     try:
-        # DeFiLlama - free, no auth
-        resp = requests.get("https://api.llama.fi/protocol/lido", timeout=10)
-        lido_data = resp.json() if resp.status_code == 200 else {}
-
         # ETH price from CoinGecko (free tier)
         price_resp = requests.get(
             "https://api.coingecko.com/api/v3/simple/price?ids=ethereum,lido-staked-ether&vs_currencies=usd",
@@ -152,20 +141,17 @@ def analyze_market_conditions() -> str:
 
         eth_price = prices.get("ethereum", {}).get("usd", "unknown")
         steth_price = prices.get("lido-staked-ether", {}).get("usd", "unknown")
-        lido_tvl = lido_data.get("tvl", [{}])[-1].get("totalLiquidityUSD", "unknown") if lido_data.get("tvl") else "unknown"
 
         return json.dumps({
             "eth_price_usd": eth_price,
             "steth_price_usd": steth_price,
-            "lido_tvl_usd": lido_tvl,
             "conditions": "Fetched successfully",
-            "recommendation": "Conditions look stable" if eth_price != "unknown" else "Unable to fetch full data"
+            "recommendation": "Conditions look stable" if eth_price != "unknown" else "Unable to fetch data"
         })
     except Exception as e:
         return json.dumps({"error": str(e)})
 
 
-@tool
 def send_telegram_report(message: str) -> str:
     """
     Send a status report or alert to the human operator via Telegram.
